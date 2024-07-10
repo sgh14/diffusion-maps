@@ -1,2 +1,2 @@
 # diffusion-maps
-Diffusion maps algorithm for manifold learning (dimensionality reduction) with Python
+Diffusion maps algorithm for manifold learning (dimensionality reduction) with Python and optimized with Numba.
