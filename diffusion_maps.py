@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from kernels import rbf_kernel, laplacian_kernel
 
 
-class DM(TransformerMixin, BaseEstimator):
+class DiffusionMaps(TransformerMixin, BaseEstimator):
     """
     Diffusion Maps.
     """
