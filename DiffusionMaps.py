@@ -90,7 +90,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         # Compute k_ij/(d_i^alpha * d_j^alpha)
         K_alpha = D_i_inv @ K @ D_j_inv
         # Compute 1/d_i^{(alpha)} as a diagonal matrix
-        D__i_inv_alpha = np.diag(np.sum(K_alpha, axis=1) ** (-1))
+        D_i_inv_alpha = np.diag(np.sum(K_alpha, axis=1) ** (-1))
         # Compute k_ij^{(alpha)}/d_i^{(alpha)}
         P = D_i_inv_alpha @ K_alpha
 
