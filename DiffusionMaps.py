@@ -171,7 +171,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         # Get the eigenvalues and eigenvectors of P
         self.lambdas, self.psis = self._spectral_decomposition(P)
         # Fix eigenvectors orientation
-        self.psis = DM._fix_vector_orientation(self.psis)
+        self.psis = DiffusionMaps._fix_vector_orientation(self.psis)
         # Reduce dimension
         lambdas_red = self.lambdas[1:self.n_components + 1]
         psis_red = self.psis[:, 1:self.n_components + 1]
