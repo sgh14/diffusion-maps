@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.metrics import pairwise_distances
 
 def get_sigma(X, q=0.5):
