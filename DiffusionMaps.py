@@ -84,13 +84,15 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Diffusion matrix.
         """
         # Compute 1/d_i^alpha as a diagonal matrix
-        D_inv = np.diag(np.sum(K, axis=1) ** (-alpha))
+        D_i_inv = np.diag(np.sum(K, axis=1) ** (-alpha))
+        # Compute 1/d_i^alpha as a diagonal matrix
+        D_j_inv = np.diag(np.sum(K, axis=0) ** (-alpha))
         # Compute k_ij/(d_i^alpha * d_j^alpha)
-        K_alpha = D_inv @ K @ D_inv
+        K_alpha = D_i_inv @ K @ D_j_inv
         # Compute 1/d_i^{(alpha)} as a diagonal matrix
-        D_inv_alpha = np.diag(np.sum(K_alpha, axis=1) ** (-1))
+        D__i_inv_alpha = np.diag(np.sum(K_alpha, axis=1) ** (-1))
         # Compute k_ij^{(alpha)}/d_i^{(alpha)}
-        P = D_inv_alpha @ K_alpha
+        P = D_i_inv_alpha @ K_alpha
 
         return P
 
