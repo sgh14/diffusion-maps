@@ -34,7 +34,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
     @staticmethod
     @njit
-    def get_kernel(X, Y, sigma, kernel):
+    def get_kernel(X, Y, sigma, kernel, alpha):
         """
         Compute the kernel matrix.
 
@@ -48,6 +48,8 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Scale parameter for the kernel.
         kernel : str
             Type of kernel to use ('rbf' or 'laplacian').
+        alpha : float
+            Normalization factor.
 
         Returns
         -------
@@ -62,12 +64,19 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         else:
             raise ValueError("Unsupported kernel")
 
-        return K
+        # Compute 1/d_i^alpha as a diagonal matrix
+        D_i_inv = np.diag(np.sum(K, axis=1) ** (-alpha))
+        # Compute 1/d_i^alpha as a diagonal matrix
+        D_j_inv = np.diag(np.sum(K, axis=0) ** (-alpha))
+        # Compute k_ij/(d_i^alpha * d_j^alpha)
+        K_alpha = D_i_inv @ K @ D_j_inv
+
+        return K_alpha
 
 
     @staticmethod
     @njit
-    def _get_P(K, alpha):
+    def _get_P(K):
         """
         Compute the diffusion matrix P.
 
@@ -75,24 +84,17 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         ----------
         K : array-like, shape (n_samples_X, n_samples_Y)
             Kernel matrix.
-        alpha : float
-            Normalization factor.
 
         Returns
         -------
         P : array-like, shape (n_samples_X, n_samples_Y)
             Diffusion matrix.
         """
-        # Compute 1/d_i^alpha as a diagonal matrix
-        D_i_inv = np.diag(np.sum(K, axis=1) ** (-alpha))
-        # Compute 1/d_i^alpha as a diagonal matrix
-        D_j_inv = np.diag(np.sum(K, axis=0) ** (-alpha))
-        # Compute k_ij/(d_i^alpha * d_j^alpha)
-        K_alpha = D_i_inv @ K @ D_j_inv
+        
         # Compute 1/d_i^{(alpha)} as a diagonal matrix
-        D_i_inv_alpha = np.diag(np.sum(K_alpha, axis=1) ** (-1))
+        D_i_inv = np.diag(np.sum(K, axis=1) ** (-1))
         # Compute k_ij^{(alpha)}/d_i^{(alpha)}
-        P = D_i_inv_alpha @ K_alpha
+        P = D_i_inv @ K
 
         return P
 
@@ -167,9 +169,9 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         """
         self.X = X
         # Compute the kernel
-        K = self.get_kernel(self.X, self.X, self.sigma, self.kernel)
+        K = self.get_kernel(self.X, self.X, self.sigma, self.kernel, self.alpha)
         # Compute the matrix P
-        P = self._get_P(K, self.alpha)
+        P = self._get_P(K)
         # Get the eigenvalues and eigenvectors of P
         self.lambdas, self.psis = self._spectral_decomposition(P)
         # Fix eigenvectors orientation
