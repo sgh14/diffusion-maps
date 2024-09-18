@@ -97,6 +97,33 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         P = D_i_inv @ K
 
         return P
+    
+
+    @staticmethod
+    @njit
+    def diffusion_distances(P, d):
+        """
+        Compute diffusion distances.
+
+        Args:
+            P (np.array): Diffusion probability matrix.
+            d (np.array): Degree vector.
+
+        Returns:
+            np.array: Matrix of diffusion distances.
+        """
+        D = np.zeros(P.shape)
+        # Compute stationary distribution
+        pi = d / np.sum(d)
+        for i in range(P.shape[0]):
+            for j in range(i+1, P.shape[1]):
+                # Compute diffusion distance between points i and j
+                D_ij = np.sqrt(np.sum(((P[i, :] - P[j, :])**2) / pi))
+                # Store the distance (matrix is symmetric)
+                D[i, j] = D_ij
+                D[j, i] = D_ij
+
+        return D
 
 
     @staticmethod
