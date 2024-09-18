@@ -33,7 +33,6 @@ def plot_original(X, y, title, output_dir):
 
     fig, ax = plt.subplots(figsize=(3, 3), subplot_kw={"projection": "3d"})
     ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=y, alpha=1)
-    ax.ticklabel_format(axis='both', style='sci', scilimits=(-1, 1), useMathText=True)
     ax.set_xlabel('$x$')
     ax.set_xlim([-13, 13])
     ax.set_ylabel('$y$')
@@ -41,6 +40,7 @@ def plot_original(X, y, title, output_dir):
     ax.set_zlabel('$z$')
     ax.set_zlim([-13, 13])
     ax.view_init(15, -72)
+    ax.dist = 12
     fig.tight_layout()
 
     for format in ('.pdf', '.png', '.svg'):
