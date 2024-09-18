@@ -221,9 +221,9 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Transformed data.
         """
         # Compute the kernel
-        K = self.get_kernel(Y, self.X, self.sigma, self.kernel)
+        K = self.get_kernel(Y, self.X, self.sigma, self.kernel, self.alpha)
         # Compute the matrix P(Y, X)
-        P = self._get_P(K, self.alpha)
+        P = self._get_P(K)
         # Get the n_components biggest eigenvalues of P(X, X)
         lambdas_red = self.lambdas[1:self.n_components + 1]
         # Apply Nyström formula
