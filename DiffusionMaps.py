@@ -169,11 +169,11 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         """
         self.X = X
         # Compute the kernel
-        K = self.get_kernel(self.X, self.X, self.sigma, self.kernel, self.alpha)
+        self.K = self.get_kernel(self.X, self.X, self.sigma, self.kernel, self.alpha)
         # Compute the matrix P
-        P = self._get_P(K)
+        self.P = self._get_P(self.K)
         # Get the eigenvalues and eigenvectors of P
-        self.lambdas, self.psis = self._spectral_decomposition(P)
+        self.lambdas, self.psis = self._spectral_decomposition(self.P)
         # Fix eigenvectors orientation
         self.psis = DiffusionMaps._fix_vector_orientation(self.psis)
         # Reduce dimension
