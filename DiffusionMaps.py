@@ -8,7 +8,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     """
     Diffusion Maps.
     """
-    def __init__(self, sigma, n_components, step=1, alpha=1, kernel='rbf'):
+    def __init__(self, sigma, n_components, steps=1, alpha=1, kernel='rbf'):
         """
         Initialize the Diffusion Maps instance.
         
@@ -18,7 +18,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Scale parameter for the kernel.
         n_components : int
             Number of diffusion map components to keep.
-        step : int, optional (default=1)
+        steps : int, optional (default=1)
             Power to which eigenvalues are raised in the diffusion map.
         alpha : float, optional (default=1)
             Normalization factor.
@@ -27,7 +27,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         """
         self.sigma = sigma
         self.n_components = n_components
-        self.step = step
+        self.steps = steps
         self.alpha = alpha
         self.kernel = kernel
 
@@ -180,7 +180,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         lambdas_red = self.lambdas[1:self.n_components + 1]
         psis_red = self.psis[:, 1:self.n_components + 1]
         # Compute the new coordinates
-        self.Psi_step = psis_red * (lambdas_red ** self.step)
+        self.Psi_steps = psis_red * (lambdas_red ** self.steps)
 
         return self
 
@@ -200,7 +200,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Reduced data.
         """
         self.fit(X)
-        X_red = self.Psi_step
+        X_red = self.Psi_steps
 
         return X_red
 
@@ -227,6 +227,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         # Get the n_components biggest eigenvalues of P(X, X)
         lambdas_red = self.lambdas[1:self.n_components + 1]
         # Apply Nyström formula
-        Y_red = (P @ self.Psi_step) / lambdas_red
+        Y_red = (P @ self.Psi_steps) / lambdas_red
 
         return Y_red
