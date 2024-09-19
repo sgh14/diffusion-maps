@@ -10,7 +10,7 @@ def build_encoder(input_shape, units, n_components, activation='relu'):
         Dense(units//4, activation=activation),
         BatchNormalization(),
         Dense(n_components, use_bias=False, activation='linear')
-    ])
+    ], name='encoder')
 
     return encoder
 
@@ -22,6 +22,6 @@ def build_decoder(output_shape, units, n_components, activation='relu'):
         Dense(units//2, activation=activation),
         Dense(units, activation=activation),
         Dense(*output_shape, activation='linear')
-    ])
+    ], name='decoder')
 
     return decoder

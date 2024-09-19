@@ -65,4 +65,4 @@ def compute_metrics(
     
     # Save the results to a .txt file
     df = pd.DataFrame(results)
-    df.to_csv(os.path.join(output_dir, 'metrics.txt'), sep='\t', index=False)
+    df.to_csv(os.path.join(output_dir, 'metrics-' + title + '.txt'), sep='\t', index=False)
