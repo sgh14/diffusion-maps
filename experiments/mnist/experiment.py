@@ -23,7 +23,7 @@ titles = [
     'Many samples with noise'
 ]
 
-datasets_train, datasets_test = get_datasets(npoints=2000, test_size=0.1, seed=123, noise=0.25)
+datasets_train, datasets_test = get_datasets(npoints=10000, test_size=0.1, seed=123, noise=0.25)
 
 for (X, y), title in zip(datasets_train, titles):
     plot_original(
