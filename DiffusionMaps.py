@@ -64,12 +64,13 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         else:
             raise ValueError("Unsupported kernel")
 
-        # Compute 1/d_i^alpha as a diagonal matrix
-        D_i_inv = np.diag(np.sum(K, axis=1) ** (-alpha))
-        # Compute 1/d_i^alpha as a diagonal matrix
-        D_j_inv = np.diag(np.sum(K, axis=0) ** (-alpha))
+        
+        d_i_alpha = np.sum(K, axis=1)**alpha
+        # D_i_alpha_inv = np.diag(d_i ** (-1))
+        d_j_alpha = np.sum(K, axis=0)**alpha
+        # D_j_alpha_inv = np.diag(d_j ** (-1))
         # Compute k_ij/(d_i^alpha * d_j^alpha)
-        K_alpha = D_i_inv @ K @ D_j_inv
+        K_alpha = K/np.outer(d_i_alpha, d_j_alpha) # D_i_alpha_inv @ K @ D_j_alpha_inv
 
         return K_alpha
 
@@ -91,10 +92,10 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Diffusion matrix.
         """
         
-        # Compute 1/d_i^{(alpha)} as a diagonal matrix
-        D_i_inv = np.diag(np.sum(K, axis=1) ** (-1))
+        d_i = np.sum(K, axis=1)
+        # D_i_inv = np.diag(d_i ** (-1))
         # Compute k_ij^{(alpha)}/d_i^{(alpha)}
-        P = D_i_inv @ K
+        P = K / d_i[:, np.newaxis] # D_i_inv @ K 
 
         return P
     
@@ -144,15 +145,15 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         """
         # Fix the first non-zero component of every vector to be positive
         for i in range(vectors.shape[1]):
-            first_nonzero = np.nonzero(vectors[:, i])[0][0]
-            if vectors[first_nonzero, i] < 0:
+            first_nonzero = np.nonzero(np.real(vectors[:, i]))[0][0]
+            if np.real(vectors[first_nonzero, i]) < 0:
                 vectors[:, i] *= -1
 
         return vectors
 
 
     @staticmethod
-    @njit
+    # @njit
     def _spectral_decomposition(A):
         """
         Perform spectral decomposition on matrix A.
@@ -171,8 +172,9 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         """
         # Compute the eigenvalues and right eigenvectors
         eigenvalues, eigenvectors = np.linalg.eig(A)
+        eigenvalues = np.real(eigenvalues) # np.real_if_close(eigenvalues, tol=1e10)
         # Find the order of the eigenvalues (decreasing order)
-        order = np.argsort(np.real(eigenvalues))[::-1]
+        order = np.argsort(eigenvalues)[::-1]
         # Sort eigenvalues and eigenvectors
         eigenvalues = eigenvalues[order]
         eigenvectors = eigenvectors[:, order]
