@@ -173,6 +173,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         # Compute the eigenvalues and right eigenvectors
         eigenvalues, eigenvectors = np.linalg.eig(A)
         eigenvalues = np.real(eigenvalues) # np.real_if_close(eigenvalues, tol=1e10)
+        eigenvectors = np.real(eigenvectors) # np.real_if_close(eigenvectors, tol=1e10)
         # Find the order of the eigenvalues (decreasing order)
         order = np.argsort(eigenvalues)[::-1]
         # Sort eigenvalues and eigenvectors
