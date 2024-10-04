@@ -45,7 +45,7 @@ for i in range(len(titles)):
 
     decoder = build_decoder(output_shape=(X_train.shape[-1],), units=128, n_components=2)
     decoder.compile(optimizer='adam', loss='mse')
-    history = decoder.fit(X_train_red, X_train, epochs=500, validation_split=0.1, shuffle=True, batch_size=64, verbose=0)
+    history = decoder.fit(X_train_red, X_train, epochs=500, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
     X_train_rec = decoder(X_train_red)
     X_test_rec = decoder(X_test_red)
 

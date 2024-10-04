@@ -49,7 +49,7 @@ for i in range(len(titles)):
 
     decoder = build_conv_decoder(output_shape=X_train.shape[1:], filters=8, n_components=2, cropping=(2, 2), dropout=0.2)
     decoder.compile(optimizer='adam', loss='mse')
-    history = decoder.fit(X_train_red, X_train, epochs=50, validation_split=0.1, shuffle=True, batch_size=64, verbose=1)
+    history = decoder.fit(X_train_red, X_train, epochs=100, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
     X_train_rec = decoder(X_train_red).numpy()
     X_test_rec = decoder(X_test_red).numpy()
     
