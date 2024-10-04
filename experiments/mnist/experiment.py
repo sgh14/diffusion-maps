@@ -47,7 +47,7 @@ for i in range(len(titles)):
     X_test_red = DM.transform(X_test.reshape((X_test.shape[0], -1)))
     toc = time.perf_counter()
 
-    decoder = build_conv_decoder(output_shape=X_train.shape[1:], filters=8, n_components=2, cropping=(2, 2))
+    decoder = build_conv_decoder(output_shape=X_train.shape[1:], filters=8, n_components=2, cropping=(2, 2), dropout=0.2)
     decoder.compile(optimizer='adam', loss='mse')
     history = decoder.fit(X_train_red, X_train, epochs=50, validation_split=0.1, shuffle=True, batch_size=64, verbose=1)
     X_train_rec = decoder(X_train_red).numpy()
