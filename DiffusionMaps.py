@@ -33,7 +33,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
 
     @staticmethod
-    @njit
     def get_kernel(X, Y, sigma, kernel, alpha):
         """
         Compute the kernel matrix.
