@@ -2,6 +2,7 @@ import numpy as np
 from numba import njit
 from sklearn.base import BaseEstimator, TransformerMixin
 from kernels import rbf_kernel, laplacian_kernel
+from sklearn.metrics import pairwise_distances
 
 
 class DiffusionMaps(TransformerMixin, BaseEstimator):
@@ -101,29 +102,39 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
     @staticmethod
     @njit
-    def diffusion_distances(P, d):
+    def diffusion_distances(P, pi):
         """
         Compute diffusion distances.
 
         Args:
             P (np.array): Diffusion probability matrix.
-            d (np.array): Degree vector.
+            pi (np.array): Stationary distribution.
 
         Returns:
             np.array: Matrix of diffusion distances.
         """
-        D = np.zeros(P.shape)
-        # Compute stationary distribution
-        pi = d / np.sum(d)
-        for i in range(P.shape[0]):
-            for j in range(i+1, P.shape[1]):
-                # Compute diffusion distance between points i and j
-                D_ij = np.sqrt(np.sum(((P[i, :] - P[j, :])**2) / pi))
-                # Store the distance (matrix is symmetric)
-                D[i, j] = D_ij
-                D[j, i] = D_ij
+        diff_dist = lambda P_i, P_j: np.sqrt(np.sum(((P_i - P_j)**2) / pi))
+        D = pairwise_distances(P, metric=diff_dist)
+        # D = np.zeros(P.shape)
+        # for i in range(P.shape[0]):
+        #     for j in range(i+1, P.shape[1]):
+        #         # Compute diffusion distance between points i and j
+        #         D_ij = (P[i, i]**2 - P[j, i]**2)/pi[i] + (P[j, j]**2 - P[i, j]**2)/pi[j]
+        #         # Store the distance (matrix is symmetric)
+        #         D[i, j] = D_ij
+        #         D[j, i] = D_ij
 
         return D
+    
+
+    @staticmethod
+    @njit
+    def _get_A(K):
+        d_i = np.sum(K, axis=1)
+        d_j = np.sum(K, axis=0)
+        A = K/np.outer(np.sqrt(d_i), np.sqrt(d_j))
+
+        return A
 
 
     @staticmethod
@@ -170,9 +181,9 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
             Corresponding eigenvectors.
         """
         # Compute the eigenvalues and right eigenvectors
-        eigenvalues, eigenvectors = np.linalg.eig(A)
-        eigenvalues = np.real(eigenvalues) # np.real_if_close(eigenvalues, tol=1e10)
-        eigenvectors = np.real(eigenvectors) # np.real_if_close(eigenvectors, tol=1e10)
+        eigenvalues, eigenvectors = np.linalg.eigh(A)
+        # eigenvalues = np.real(eigenvalues)
+        # eigenvectors = np.real(eigenvectors)
         # Find the order of the eigenvalues (decreasing order)
         order = np.argsort(eigenvalues)[::-1]
         # Sort eigenvalues and eigenvectors
@@ -200,16 +211,24 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         # Compute the kernel
         self.K = self.get_kernel(self.X, self.X, self.sigma, self.kernel, self.alpha)
         # Compute the matrix P
-        self.P = self._get_P(self.K)
+        # self.P = self._get_P(self.K)
+        # Compute the matrix A
+        self.A = self._get_A(self.K)
         # Get the eigenvalues and eigenvectors of P
-        self.lambdas, self.psis = self._spectral_decomposition(self.P)
+        self.lambdas, self.phis = self._spectral_decomposition(self.A)
         # Fix eigenvectors orientation
-        self.psis = DiffusionMaps._fix_vector_orientation(self.psis)
+        self.phis = DiffusionMaps._fix_vector_orientation(self.phis)
         # Reduce dimension
         lambdas_red = self.lambdas[1:self.n_components + 1]
-        psis_red = self.psis[:, 1:self.n_components + 1]
+        phis_red = self.phis[:, 1:self.n_components + 1]
+        # Compute degree vector
+        d = np.sum(self.K, axis=0)
+        # Compute the stationary distribution
+        self.pi = d / np.sum(d)
+        # Compute P right eigenvectors
+        psis_red = phis_red / self.pi[:, np.newaxis]
         # Compute the new coordinates
-        self.Psi_steps = psis_red * (lambdas_red ** self.steps)
+        self.Psi_steps = psis_red * (lambdas_red[np.newaxis, :] ** self.steps)
 
         return self
 
