@@ -1,7 +1,6 @@
 import numpy as np
 from numba import njit
 from sklearn.base import BaseEstimator, TransformerMixin
-from kernels import rbf_kernel, laplacian_kernel
 from sklearn.metrics import pairwise_distances
 
 
@@ -10,61 +9,25 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     Diffusion Maps.
     """
     def __init__(self, sigma, n_components, steps=1, alpha=1, kernel='rbf'):
-        """
-        Initialize the Diffusion Maps instance.
-        
-        Parameters
-        ----------
-        sigma : float
-            Scale parameter for the kernel.
-        n_components : int
-            Number of diffusion map components to keep.
-        steps : int, optional (default=1)
-            Power to which eigenvalues are raised in the diffusion map.
-        alpha : float, optional (default=1)
-            Normalization factor.
-        kernel : str, optional (default='rbf')
-            Type of kernel to use ('rbf' or 'laplacian').
-        """
         self.sigma = sigma
+        self.gamma = 1/(2*sigma**2)
         self.n_components = n_components
         self.steps = steps
         self.alpha = alpha
-        self.kernel = kernel
 
 
     @staticmethod
-    def get_kernel(X, Y, sigma, kernel, alpha):
-        """
-        Compute the kernel matrix.
+    def rbf_kernel(X, Y=None, gamma=None):
+        gamma = gamma if gamma else 1.0 / X.shape[1]
+        distances = pairwise_distances(X, Y, metric='sqeuclidean')
+        K = np.exp(-gamma * distances)
 
-        Parameters
-        ----------
-        X : array-like, shape (n_samples_X, n_features)
-            Input data.
-        Y : array-like, shape (n_samples_Y, n_features)
-            Input data. If None, compute the kernel with respect to X.
-        sigma : float
-            Scale parameter for the kernel.
-        kernel : str
-            Type of kernel to use ('rbf' or 'laplacian').
-        alpha : float
-            Normalization factor.
+        return K
 
-        Returns
-        -------
-        K : array-like, shape (n_samples_X, n_samples_Y)
-            Kernel matrix.
-        """
-        gamma = 1 / (2 * sigma ** 2)
-        if kernel == 'laplacian':
-            K = laplacian_kernel(X, Y, gamma=gamma)
-        elif kernel == 'rbf':
-            K = rbf_kernel(X, Y, gamma=gamma)
-        else:
-            raise ValueError("Unsupported kernel")
 
-        
+    @staticmethod
+    def get_kernel(X, Y, gamma, alpha):
+        K = DiffusionMaps.rbf_kernel(X, Y, gamma=gamma)        
         d_i_alpha = np.sum(K, axis=1)**alpha
         # D_i_alpha_inv = np.diag(d_i ** (-1))
         d_j_alpha = np.sum(K, axis=0)**alpha
@@ -78,20 +41,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     @staticmethod
     @njit
     def _get_P(K):
-        """
-        Compute the diffusion matrix P.
-
-        Parameters
-        ----------
-        K : array-like, shape (n_samples_X, n_samples_Y)
-            Kernel matrix.
-
-        Returns
-        -------
-        P : array-like, shape (n_samples_X, n_samples_Y)
-            Diffusion matrix.
-        """
-        
         d_i = np.sum(K, axis=1)
         # D_i_inv = np.diag(d_i ** (-1))
         # Compute k_ij^{(alpha)}/d_i^{(alpha)}
@@ -103,26 +52,17 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     @staticmethod
     @njit
     def diffusion_distances(P, pi):
-        """
-        Compute diffusion distances.
-
-        Args:
-            P (np.array): Diffusion probability matrix.
-            pi (np.array): Stationary distribution.
-
-        Returns:
-            np.array: Matrix of diffusion distances.
-        """
-        diff_dist = lambda P_i, P_j: np.sqrt(np.sum(((P_i - P_j)**2) / pi))
-        D = pairwise_distances(P, metric=diff_dist)
-        # D = np.zeros(P.shape)
-        # for i in range(P.shape[0]):
-        #     for j in range(i+1, P.shape[1]):
-        #         # Compute diffusion distance between points i and j
-        #         D_ij = (P[i, i]**2 - P[j, i]**2)/pi[i] + (P[j, j]**2 - P[i, j]**2)/pi[j]
-        #         # Store the distance (matrix is symmetric)
-        #         D[i, j] = D_ij
-        #         D[j, i] = D_ij
+        # diff_dist = lambda P_i, P_j: np.sqrt(np.sum(((P_i - P_j)**2) / pi))
+        # D = pairwise_distances(P, metric=diff_dist)
+        D = np.zeros(P.shape)
+        for i in range(P.shape[0]):
+            for j in range(i+1, P.shape[1]):
+                # Compute diffusion distance between points i and j
+                D_ij = np.sqrt(np.sum(((P[i, :] - P[j, :])**2) / pi))
+                # D_ij = (P[i, i]**2 - P[j, i]**2)/pi[i] + (P[j, j]**2 - P[i, j]**2)/pi[j]
+                # Store the distance (matrix is symmetric)
+                D[i, j] = D_ij
+                D[j, i] = D_ij
 
         return D
     
@@ -140,23 +80,10 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     @staticmethod
     @njit
     def _fix_vector_orientation(vectors):
-        """
-        Fix the orientation of eigenvectors.
-
-        Parameters
-        ----------
-        vectors : array-like, shape (n_samples, n_components)
-            Eigenvectors to fix.
-
-        Returns
-        -------
-        vectors : array-like, shape (n_samples, n_components)
-            Eigenvectors with fixed orientation.
-        """
         # Fix the first non-zero component of every vector to be positive
         for i in range(vectors.shape[1]):
-            first_nonzero = np.nonzero(np.real(vectors[:, i]))[0][0]
-            if np.real(vectors[first_nonzero, i]) < 0:
+            first_nonzero = np.nonzero(vectors[:, i])[0][0]
+            if vectors[first_nonzero, i] < 0:
                 vectors[:, i] *= -1
 
         return vectors
@@ -165,25 +92,8 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     @staticmethod
     # @njit
     def _spectral_decomposition(A):
-        """
-        Perform spectral decomposition on matrix A.
-
-        Parameters
-        ----------
-        A : array-like, shape (n_samples, n_samples)
-            Matrix to decompose.
-
-        Returns
-        -------
-        eigenvalues : array-like, shape (n_samples,)
-            Eigenvalues in decreasing order.
-        eigenvectors : array-like, shape (n_samples, n_samples)
-            Corresponding eigenvectors.
-        """
         # Compute the eigenvalues and right eigenvectors
         eigenvalues, eigenvectors = np.linalg.eigh(A)
-        # eigenvalues = np.real(eigenvalues)
-        # eigenvectors = np.real(eigenvectors)
         # Find the order of the eigenvalues (decreasing order)
         order = np.argsort(eigenvalues)[::-1]
         # Sort eigenvalues and eigenvectors
@@ -194,22 +104,9 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
 
     def fit(self, X, y=None):
-        """
-        Fit the model with X.
-
-        Parameters
-        ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data.
-
-        Returns
-        -------
-        self : object
-            Returns the instance itself.
-        """
         self.X = X
         # Compute the kernel
-        self.K = self.get_kernel(self.X, self.X, self.sigma, self.kernel, self.alpha)
+        self.K = self.get_kernel(self.X, self.X, self.gamma, self.alpha)
         # Compute the matrix P
         # self.P = self._get_P(self.K)
         # Compute the matrix A
@@ -217,64 +114,58 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         # Get the eigenvalues and eigenvectors of P
         self.lambdas, self.phis = self._spectral_decomposition(self.A)
         # Fix eigenvectors orientation
-        self.phis = DiffusionMaps._fix_vector_orientation(self.phis)
+        self.phis = self._fix_vector_orientation(self.phis)
         # Reduce dimension
-        lambdas_red = self.lambdas[1:self.n_components + 1]
-        phis_red = self.phis[:, 1:self.n_components + 1]
+        self.lambdas = self.lambdas[:self.n_components + 1]
+        self.phis = self.phis[:, :self.n_components + 1]
         # Compute degree vector
-        d = np.sum(self.K, axis=0)
+        d = np.sum(self.K, axis=1)
         # Compute the stationary distribution
         self.pi = d / np.sum(d)
         # Compute P right eigenvectors
-        psis_red = phis_red / self.pi[:, np.newaxis]
+        self.psis = self.phis / np.sqrt(self.pi[:, np.newaxis])
         # Compute the new coordinates
-        self.Psi_steps = psis_red * (lambdas_red[np.newaxis, :] ** self.steps)
+        self.Psi_steps = self.psis * (self.lambdas[np.newaxis, :] ** self.steps)
 
         return self
 
 
     def fit_transform(self, X, y=None):
-        """
-        Fit the model with X and apply the dimensionality reduction on X.
-
-        Parameters
-        ----------
-        X : array-like, shape (n_samples, n_features)
-            Training data.
-
-        Returns
-        -------
-        X_red : array-like, shape (n_samples, n_components)
-            Reduced data.
-        """
         self.fit(X)
-        X_red = self.Psi_steps
+        X_red = self.Psi_steps[:, 1:]
 
         return X_red
 
 
+    def _get_K_alpha_approx(self, X, Y):
+        K = DiffusionMaps.rbf_kernel(X, Y, gamma=self.gamma)
+        K_x = DiffusionMaps.rbf_kernel(X, self.X, gamma=self.gamma)
+        K_y = DiffusionMaps.rbf_kernel(Y, self.X, gamma=self.gamma)
+        d_x = np.sum(K_x, axis=1)
+        d_y = np.sum(K_y, axis=1)
+        K_alpha = K / np.outer(d_x, d_y)
+
+        return K_alpha
+    
+
+    def _get_A_approx(self, X, Y):
+        K_alpha = self._get_K_alpha_approx(X, Y)
+        K_alpha_x = self._get_K_alpha_approx(X, self.X)
+        K_alpha_y = self._get_K_alpha_approx(Y, self.X)
+        d_alpha_x = np.sum(K_alpha_x, axis=1)
+        d_alpha_y = np.sum(K_alpha_y, axis=1)
+        A = K_alpha / np.sqrt(np.outer(d_alpha_x, d_alpha_y))
+
+        return A
+
+
     def transform(self, Y):
-        """
-        Transform Y using the fitted model.
-        This function is implemented using the Nyström formula.
-
-        Parameters
-        ----------
-        Y : array-like, shape (n_samples, n_features)
-            Data to transform.
-
-        Returns
-        -------
-        Y_red : array-like, shape (n_samples, n_components)
-            Transformed data.
-        """
-        # Compute the kernel
-        K = self.get_kernel(Y, self.X, self.sigma, self.kernel, self.alpha)
-        # Compute the matrix P(Y, X)
-        P = self._get_P(K)
-        # Get the n_components biggest eigenvalues of P(X, X)
-        lambdas_red = self.lambdas[1:self.n_components + 1]
-        # Apply Nyström formula
-        Y_red = (P @ self.Psi_steps) / lambdas_red
+        new_A = self._get_A_approx(Y, self.X)
+        new_phis = (new_A @ self.phis) / self.lambdas[np.newaxis, :]
+        new_lambdas = self.lambdas
+        new_pi = new_phis[:, 0]**2
+        new_psis = new_phis / np.sqrt(new_pi[:, np.newaxis])
+        new_Psi_steps = new_psis * (new_lambdas[np.newaxis, :] ** self.steps)
+        Y_red = new_Psi_steps[:, 1:]
 
         return Y_red

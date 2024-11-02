@@ -33,7 +33,7 @@ datasets_train, datasets_test = get_datasets(test_size=0.2, seed=seed, noise=0.2
 q_vals = [0.75, 0.75, 0.75, 0.75]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
-kernel = 'rbf'
+
 
 for i in range(len(titles)):
     title = titles[i]
