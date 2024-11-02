@@ -39,7 +39,7 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
 
     @staticmethod
-    @njit
+    # @njit
     def _get_P(K):
         d_i = np.sum(K, axis=1)
         # D_i_inv = np.diag(d_i ** (-1))
@@ -50,25 +50,16 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     
 
     @staticmethod
-    @njit
     def diffusion_distances(P, pi):
-        # diff_dist = lambda P_i, P_j: np.sqrt(np.sum(((P_i - P_j)**2) / pi))
-        # D = pairwise_distances(P, metric=diff_dist)
-        D = np.zeros(P.shape)
-        for i in range(P.shape[0]):
-            for j in range(i+1, P.shape[1]):
-                # Compute diffusion distance between points i and j
-                D_ij = np.sqrt(np.sum(((P[i, :] - P[j, :])**2) / pi))
-                # D_ij = (P[i, i]**2 - P[j, i]**2)/pi[i] + (P[j, j]**2 - P[i, j]**2)/pi[j]
-                # Store the distance (matrix is symmetric)
-                D[i, j] = D_ij
-                D[j, i] = D_ij
+        D = pairwise_distances(
+            P, metric=lambda P_i, P_j: np.sqrt(np.sum(((P_i - P_j)**2) / pi))
+        )
 
         return D
     
 
     @staticmethod
-    @njit
+    # @njit
     def _get_A(K):
         d_i = np.sum(K, axis=1)
         d_j = np.sum(K, axis=0)
