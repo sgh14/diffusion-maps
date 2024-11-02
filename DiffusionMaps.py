@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import pairwise_distances
 
@@ -39,7 +38,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
 
     @staticmethod
-    # @njit
     def _get_P(K):
         d_i = np.sum(K, axis=1)
         # D_i_inv = np.diag(d_i ** (-1))
@@ -59,7 +57,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     
 
     @staticmethod
-    # @njit
     def _get_A(K):
         d_i = np.sum(K, axis=1)
         d_j = np.sum(K, axis=0)
@@ -69,7 +66,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
 
     @staticmethod
-    @njit
     def _fix_vector_orientation(vectors):
         # Fix the first non-zero component of every vector to be positive
         for i in range(vectors.shape[1]):
@@ -81,7 +77,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
 
     @staticmethod
-    # @njit
     def _spectral_decomposition(A):
         # Compute the eigenvalues and right eigenvectors
         eigenvalues, eigenvectors = np.linalg.eigh(A)
