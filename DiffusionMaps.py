@@ -27,22 +27,16 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
     @staticmethod
     def get_kernel(X, Y, gamma, alpha):
         K = DiffusionMaps.rbf_kernel(X, Y, gamma=gamma)        
-        d_i_alpha = np.sum(K, axis=1)**alpha
-        # D_i_alpha_inv = np.diag(d_i ** (-1))
-        d_j_alpha = np.sum(K, axis=0)**alpha
-        # D_j_alpha_inv = np.diag(d_j ** (-1))
-        # Compute k_ij/(d_i^alpha * d_j^alpha)
-        K_alpha = K/np.outer(d_i_alpha, d_j_alpha) # D_i_alpha_inv @ K @ D_j_alpha_inv
+        d_alpha = np.sum(K, axis=1)**alpha
+        K_alpha = K/np.outer(d_alpha, d_alpha)
 
         return K_alpha
 
 
     @staticmethod
     def _get_P(K):
-        d_i = np.sum(K, axis=1)
-        # D_i_inv = np.diag(d_i ** (-1))
-        # Compute k_ij^{(alpha)}/d_i^{(alpha)}
-        P = K / d_i[:, np.newaxis] # D_i_inv @ K 
+        d = np.sum(K, axis=1)
+        P = K / d[:, np.newaxis]
 
         return P
     
@@ -58,9 +52,8 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
 
     @staticmethod
     def _get_A(K):
-        d_i = np.sum(K, axis=1)
-        d_j = np.sum(K, axis=0)
-        A = K/np.outer(np.sqrt(d_i), np.sqrt(d_j))
+        d = np.sum(K, axis=1)
+        A = K/np.sqrt(np.outer(d, d))
 
         return A
 
@@ -93,8 +86,6 @@ class DiffusionMaps(TransformerMixin, BaseEstimator):
         self.X = X
         # Compute the kernel
         self.K = self.get_kernel(self.X, self.X, self.gamma, self.alpha)
-        # Compute the matrix P
-        # self.P = self._get_P(self.K)
         # Compute the matrix A
         self.A = self._get_A(self.K)
         # Get the eigenvalues and eigenvectors of P
