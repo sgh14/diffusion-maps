@@ -2,14 +2,28 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import *
 
 
-def build_encoder(input_shape, units, n_components, activation='relu'):
+class EncoderHead(Layer):
+    def __init__(self, n_components, use_bn=False, **kwargs):
+        super(EncoderHead, self).__init__(**kwargs)
+        self.use_bn = use_bn
+        self.batch_normalization = BatchNormalization()
+        self.dense = Dense(n_components, activation='linear', use_bias= not use_bn)
+
+
+    def call(self, inputs, training=False):
+        x = self.batch_normalization(inputs, training=training) if self.use_bn else inputs
+        x = self.dense(x)
+
+        return x
+    
+
+def build_encoder(input_shape, units, n_components, activation='relu', use_bn=False):
     encoder = Sequential([
         Input(shape=input_shape),
         Dense(units, activation=activation),
         Dense(units//2, activation=activation),
         Dense(units//4, activation=activation),
-        BatchNormalization(),
-        Dense(n_components, use_bias=False, activation='linear')
+        EncoderHead(n_components, use_bn)
     ], name='encoder')
 
     return encoder
@@ -57,7 +71,7 @@ class ConvBlock2D(Layer):
         return x
 
 
-def build_conv_encoder(input_shape, filters, n_components, zero_padding=(0, 0), dropout=0.0):
+def build_conv_encoder(input_shape, filters, n_components, zero_padding=(0, 0), dropout=0.0, use_bn=False):
     encoder = Sequential([
         Input(shape=input_shape),
         ZeroPadding2D(zero_padding),
@@ -66,8 +80,7 @@ def build_conv_encoder(input_shape, filters, n_components, zero_padding=(0, 0), 
         ConvBlock2D(filters*4, dropout=dropout),
         Flatten(),
         Dense(16*n_components, activation='relu'),
-        BatchNormalization(),
-        Dense(n_components, activation='linear', use_bias = False)
+        EncoderHead(n_components, use_bn)
     ], name='encoder')
 
     return encoder
@@ -160,7 +173,7 @@ class ConvBlock1D(Layer):
         return x
 
 
-def build_seq_encoder(input_shape, filters, n_components, zero_padding=0, dropout=0.0):
+def build_seq_encoder(input_shape, filters, n_components, zero_padding=0, dropout=0.0, use_bn=False):
     encoder = Sequential([
         Input(shape=input_shape),
         ZeroPadding1D(zero_padding),
@@ -168,8 +181,7 @@ def build_seq_encoder(input_shape, filters, n_components, zero_padding=0, dropou
         ConvBlock1D(filters*2, dropout=dropout),
         ConvBlock1D(filters*4, dropout=dropout),
         Flatten(),
-        BatchNormalization(),
-        Dense(n_components, activation='linear', use_bias = False)
+        EncoderHead(n_components, use_bn)
     ], name='encoder')
 
     return encoder
