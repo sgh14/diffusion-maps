@@ -207,7 +207,7 @@ titles = [
 ]
 results_file = 'results.h5'
 history_file = 'history.h5'
-decoder_file = 'decoder.h5'
+decoder_file = 'decoder.keras'
 img_shape = (28, 28, 1)
 
 q_vals = [0.0075, 0.0075, 0.0075, 0.0075]

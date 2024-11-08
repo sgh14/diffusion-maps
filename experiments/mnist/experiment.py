@@ -12,6 +12,7 @@ from experiments.mnist.load_data import get_datasets
 from experiments.utils import build_conv_decoder
 
 
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # ENSURE REPRODUCIBILITY
 seed = 123
 os.environ['PYTHONHASHSEED'] = str(seed)
@@ -41,6 +42,7 @@ for i in range(len(titles)):
     q, steps, alpha = q_vals[i], steps_vals[i], alpha_vals[i]
     experiment = f'quantile_{q}-steps_{steps}-alpha_{alpha}'
     output_dir = path.join(root, title, experiment)
+    os.makedirs(output_dir, exist_ok=True)
     X_train, y_train = datasets_train[i]
     X_test, y_test = datasets_test[i]
     # Añadimos la dimensión de canal
@@ -62,7 +64,7 @@ for i in range(len(titles)):
     X_train_rec = decoder(X_train_red).numpy()
     X_test_rec = decoder(X_test_red).numpy()
     
-    decoder.save(path.join(output_dir, 'decoder.h5'))
+    decoder.save(path.join(output_dir, 'decoder.keras'))
     with h5py.File(path.join(output_dir, 'history.h5'), 'w') as file:
         for key, value in history.history.items():
             file.create_dataset(key, data=value)

@@ -11,6 +11,7 @@ from aux_functions import get_sigma
 from experiments.phoneme.load_data import get_datasets
 from experiments.utils import build_seq_decoder
 
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # ENSURE REPRODUCIBILITY
 seed = 123
 os.environ['PYTHONHASHSEED'] = str(seed)
@@ -40,6 +41,7 @@ for i in range(len(titles)):
     q, steps, alpha = q_vals[i], steps_vals[i], alpha_vals[i]
     experiment = f'quantile_{q}-steps_{steps}-alpha_{alpha}'
     output_dir = path.join(root, title, experiment)
+    os.makedirs(output_dir, exist_ok=True)
     X_train, y_train = datasets_train[i]
     X_test, y_test = datasets_test[i]
     sigma = get_sigma(X_train.reshape((X_train.shape[0], -1)), q)
@@ -54,11 +56,11 @@ for i in range(len(titles)):
 
     decoder = build_seq_decoder(output_shape=X_train.shape[1:], filters=8, n_components=2, cropping=0)
     decoder.compile(optimizer='adam', loss='mse')
-    history = decoder.fit(X_train_red, X_train, epochs=50, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
+    history = decoder.fit(X_train_red, X_train, epochs=100, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
     X_train_rec = decoder(X_train_red).numpy()
     X_test_rec = decoder(X_test_red).numpy()
 
-    decoder.save(path.join(output_dir, 'decoder.h5'))
+    decoder.save(path.join(output_dir, 'decoder.keras'))
     with h5py.File(path.join(output_dir, 'history.h5'), 'w') as file:
         for key, value in history.history.items():
             file.create_dataset(key, data=value)
