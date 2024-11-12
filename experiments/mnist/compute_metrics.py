@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 from os import path
 
-from experiments.metrics import get_sigma, mean_diffusion_error, mean_reconstruction_error, trustworthiness_curve, continuity_curve, clustering_purity_and_accuracy
+from experiments.metrics import get_sigma, mean_diffusion_error, mean_reconstruction_error, trustworthiness_curve, continuity_curve, clustering_homogeneity_and_completeness
 
 
 root = 'experiments/mnist/results'
@@ -43,12 +43,12 @@ for i in range(len(titles)):
             rec_err = mean_reconstruction_error(X_orig, X_rec)
             t_curve = trustworthiness_curve(X_orig, X_red, k_vals)
             c_curve = continuity_curve(X_orig, X_red, k_vals)
-            accuracy, purity = clustering_purity_and_accuracy(X_red, y)
+            completeness, homogeneity = clustering_homogeneity_and_completeness(X_red, y)
     
             m_f.create_dataset("diff_err_" + subset, data=diff_err)
             m_f.create_dataset("rec_err_" + subset, data=rec_err)
             m_f.create_dataset("t_curve_" + subset, data=t_curve, compression='gzip')
             m_f.create_dataset("c_curve_" + subset, data=c_curve, compression='gzip')
             m_f.create_dataset("k_vals_" + subset, data=k_vals, compression='gzip')
-            m_f.create_dataset("accuracy_" + subset, data=accuracy)
-            m_f.create_dataset("purity_" + subset, data=purity)
+            m_f.create_dataset("completeness_" + subset, data=completeness)
+            m_f.create_dataset("homogeneity_" + subset, data=homogeneity)

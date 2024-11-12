@@ -1,9 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
-from sklearn.metrics import confusion_matrix
-from scipy.optimize import linear_sum_assignment
+from sklearn.metrics import homogeneity_score, completeness_score, pairwise_distances
 from sklearn.manifold import trustworthiness
-from sklearn.metrics import pairwise_distances
 
 
 def get_sigma(X, q=0.5):
@@ -88,33 +86,11 @@ def continuity_curve(X, X_red, k_vals, metric='euclidean'):
     return c_curve
 
 
-def clustering_purity(y_true, y_pred):
-    # Compute confusion matrix
-    matrix = confusion_matrix(y_true, y_pred)
-    # Find the maximum values in each row (each class)
-    max_in_rows = np.amax(matrix, axis=1)
-    # Sum the maximum values found
-    purity = np.sum(max_in_rows) / np.sum(matrix)
-
-    return purity
-
-
-def clustering_accuracy(y_true, y_pred):
-    # Compute the confusion matrix
-    matrix = confusion_matrix(y_true, y_pred)
-    # Use the linear_sum_assignment method to find the optimal assignment
-    row_ind, col_ind = linear_sum_assignment(-matrix)
-    # Calculate the accuracy using the optimal assignment
-    accuracy = matrix[row_ind, col_ind].sum() / np.sum(matrix)
-
-    return accuracy
-
-
-def clustering_purity_and_accuracy(X_red, y):
+def clustering_homogeneity_and_completeness(X_red, y):
     n_classes = len(np.unique(y))
     k_means = KMeans(n_clusters=n_classes)
     clusters = k_means.fit_predict(X_red)
-    purity = clustering_purity(y, clusters)
-    accuracy = clustering_accuracy(y, clusters)
+    homogeneity = homogeneity_score(y, clusters)
+    completeness = completeness_score(y, clusters)
 
-    return purity, accuracy
+    return homogeneity, completeness

@@ -2,7 +2,7 @@ import numpy as np
 import h5py
 from os import path
 
-from experiments.metrics import get_sigma, mean_diffusion_error, mean_reconstruction_error, trustworthiness_curve, continuity_curve, clustering_purity_and_accuracy
+from experiments.metrics import get_sigma, mean_diffusion_error, mean_reconstruction_error, trustworthiness_curve, continuity_curve, clustering_homogeneity_and_completeness
 
 
 root = 'experiments/helix/results'
