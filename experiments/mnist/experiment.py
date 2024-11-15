@@ -48,7 +48,7 @@ for i in range(len(titles)):
     # Añadimos la dimensión de canal
     X_train = np.expand_dims(X_train, axis=-1)
     X_test = np.expand_dims(X_test, axis=-1)
-    sigma = get_sigma(X_train.reshape((X_train.shape[0], -1)), q)
+    sigma = get_sigma(X_train, q)
     
     print(experiment, '-', title)  
     DM = DiffusionMaps(sigma=sigma, n_components=2, steps=steps, alpha=alpha)

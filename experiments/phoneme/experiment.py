@@ -44,7 +44,7 @@ for i in range(len(titles)):
     os.makedirs(output_dir, exist_ok=True)
     X_train, y_train = datasets_train[i]
     X_test, y_test = datasets_test[i]
-    sigma = get_sigma(X_train.reshape((X_train.shape[0], -1)), q)
+    sigma = get_sigma(X_train, q)
     
     print(experiment, '-', title)  
     DM = DiffusionMaps(sigma=sigma, n_components=2, steps=steps, alpha=alpha)

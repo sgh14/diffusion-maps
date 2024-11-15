@@ -2,13 +2,14 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import homogeneity_score, completeness_score, pairwise_distances
 from sklearn.manifold import trustworthiness
+from scipy.spatial.distance import pdist
 
 
 def get_sigma(X, q=0.5):
-    distances = pairwise_distances(X)
-    distances = distances.flatten()
-    sigma = np.quantile(distances[distances > 0], q)
-
+    X_flat = X.reshape((X.shape[0], -1))
+    distances = pdist(X_flat, metric='euclidean')
+    sigma = np.quantile(distances, q)
+    
     return sigma
 
 
