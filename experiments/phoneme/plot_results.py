@@ -3,6 +3,7 @@ from os import path
 import h5py
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.ticker as ticker
 
 plt.style.use('experiments/science.mplstyle')
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
@@ -42,6 +43,7 @@ def plot_original(X, y, output_dir, filename, n_samples=30):
         ax.plot(X[i], color=colors[y[i]], linewidth=1, alpha=0.75)
     
     ax.set_box_aspect(1)
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
     # Create a list of handles and labels for the legend
     unique_y = np.unique(y)
     handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[val], markersize=10) for val in unique_y]
@@ -110,7 +112,7 @@ def plot_history(history, output_dir, filename, log_scale=False):
         plt.close(fig)
 
 
-root = 'experiments/phoneme/results'
+root = '/scratch/sgarcia/tfm/DM/experiments/phoneme/results'
 titles = [
     'Few samples without noise',
     'Many samples without noise',
@@ -120,7 +122,7 @@ titles = [
 results_file = 'results.h5'
 history_file = 'history.h5'
 
-q_vals = [0.75, 0.75, 0.75, 0.75]
+q_vals = [0.25, 0.25, 0.25, 0.25]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
 
