@@ -21,7 +21,7 @@ tf.random.set_seed(seed)
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1' # force the use of CPU
 
 
-root = 'experiments/swiss_roll/results'
+root = '/scratch/sgarcia/tfm/DM/experiments/swiss_roll/results'
 titles = [
     'Few samples without noise',
     'Many samples without noise',

@@ -5,7 +5,7 @@ from os import path
 from experiments.metrics import get_sigma, mean_diffusion_error, mean_reconstruction_error, trustworthiness_curve, continuity_curve, clustering_homogeneity_and_completeness
 
 
-root = 'experiments/phoneme/results'
+root = '/scratch/sgarcia/tfm/DM/experiments/phoneme/results'
 titles = [
     'Few samples without noise',
     'Many samples without noise',

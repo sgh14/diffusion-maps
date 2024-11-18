@@ -99,7 +99,7 @@ def plot_history(history, output_dir, filename, log_scale=False):
         plt.close(fig)
 
 
-root = 'experiments/swiss_roll/results'
+root = '/scratch/sgarcia/tfm/DM/experiments/swiss_roll/results'
 titles = [
     'Few samples without noise',
     'Many samples without noise',
