@@ -31,7 +31,7 @@ titles = [
 
 datasets_train, datasets_test = get_datasets(test_size=0.2, seed=seed, noise=0.25)
 
-q_vals = [0.75, 0.75, 0.75, 0.75]
+q_vals = [0.25, 0.25, 0.25, 0.25]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
 
@@ -55,7 +55,7 @@ for i in range(len(titles)):
     toc = time.perf_counter()
 
     decoder = build_seq_decoder(output_shape=X_train.shape[1:], filters=8, n_components=2, cropping=0)
-    decoder.compile(optimizer='adam', loss='mse')
+    decoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.01), loss='mse')
     history = decoder.fit(X_train_red, X_train, epochs=100, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
     X_train_rec = decoder(X_train_red).numpy()
     X_test_rec = decoder(X_test_red).numpy()
