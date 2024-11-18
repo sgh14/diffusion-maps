@@ -16,7 +16,7 @@ results_file = 'results.h5'
 history_file = 'history.h5'
 
 diffusion_weights = np.arange(0.1, 0.99, 0.2)
-q_vals = [0.0075, 0.0075, 0.0075, 0.0075]
+q_vals = [0.0025, 0.0025, 0.0025, 0.0025]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
 
