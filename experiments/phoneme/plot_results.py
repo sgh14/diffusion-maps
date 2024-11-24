@@ -122,7 +122,7 @@ titles = [
 results_file = 'results.h5'
 history_file = 'history.h5'
 
-q_vals = [0.25, 0.25, 0.25, 0.25]
+q_vals = [0.1, 0.1, 0.1, 0.1]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
 
