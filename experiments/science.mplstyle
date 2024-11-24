@@ -11,12 +11,12 @@ axes.prop_cycle : cycler('color', ['8B008B', '008B8B', 'B8860B', '1E1E1E', '556B
 figure.figsize : 5, 3.5
 
 # Font size
-font.size: 10       # Default font size for most text elements
-axes.titlesize: 11  # Font size for titles
-axes.labelsize: 10  # Font size for axis labels
-xtick.labelsize: 10 # Font size for X-axis tick labels
-ytick.labelsize: 10 # Font size for Y-axis tick labels
-legend.fontsize: 10 # Font size for the legend
+font.size: 12       # Default font size for most text elements
+axes.titlesize: 13  # Font size for titles
+axes.labelsize: 12  # Font size for axis labels
+xtick.labelsize: 12 # Font size for X-axis tick labels
+ytick.labelsize: 12 # Font size for Y-axis tick labels
+legend.fontsize: 12 # Font size for the legend
 
 # Set x axis
 xtick.direction : in
