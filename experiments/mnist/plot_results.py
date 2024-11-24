@@ -210,7 +210,7 @@ history_file = 'history.h5'
 decoder_file = 'decoder.keras'
 img_shape = (28, 28, 1)
 
-q_vals = [0.0025, 0.0025, 0.0025, 0.0025]
+q_vals = [0.005, 0.005, 1e-4, 1e-4]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
 
