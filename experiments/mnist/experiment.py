@@ -30,9 +30,9 @@ titles = [
     'Many samples with noise'
 ]
 
-datasets_train, datasets_test = get_datasets(npoints=10000, test_size=0.1, seed=123, noise=0.25)
+datasets_train, datasets_test = get_datasets(npoints=5000, test_size=0.1, seed=seed, noise=0.15)
 
-q_vals = [0.0025, 0.0025, 0.0025, 0.0025]
+q_vals = [0.005, 0.005, 1e-4, 1e-4]
 steps_vals = [1, 1, 1, 1]
 alpha_vals = [0, 0, 0, 0]
 
@@ -59,8 +59,8 @@ for i in range(len(titles)):
     toc = time.perf_counter()
 
     decoder = build_conv_decoder(output_shape=X_train.shape[1:], filters=8, n_components=2, cropping=(2, 2), dropout=0.2)
-    decoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.05), loss='mse')
-    history = decoder.fit(X_train_red, X_train, epochs=100, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
+    decoder.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.001), loss='mse')
+    history = decoder.fit(X_train_red, X_train, epochs=500, validation_split=0.1, shuffle=False, batch_size=64, verbose=0)
     X_train_rec = decoder(X_train_red).numpy()
     X_test_rec = decoder(X_test_red).numpy()
     
