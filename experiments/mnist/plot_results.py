@@ -103,12 +103,12 @@ def plot_projection(X, y, output_dir, filename):
 
     # Create a list of handles and labels for the legend
     unique_y = np.unique(y)
-    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[val], markersize=10) for val in unique_y]
+    handles = [plt.Line2D([0], [0], linewidth=2, marker='o', color='w', markerfacecolor=colors[val], markersize=10) for val in unique_y]
     labels = [str(val) for val in unique_y]  # Adjust labels based on your case
 
     # Add the legend below the plot, with ncol=number of unique y values for one-row legend
     # fig.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5), ncol=1) # loc='lower center', ncol=len(unique_y)//2, bbox_to_anchor=(0.5, -0.1))
-    fig.legend(handles, labels, loc='lower center', ncol=len(unique_y), handletextpad=0.2, columnspacing=0.5, bbox_to_anchor=(0.5, -0.1))
+    fig.legend(handles, labels, loc='lower center', ncol=len(unique_y), handletextpad=0.2, columnspacing=0.2, bbox_to_anchor=(0.5, -0.12))
 
     for format in ('.pdf', '.png', '.svg'):
         fig.savefig(path.join(output_dir, filename + format))

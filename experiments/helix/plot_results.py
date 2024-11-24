@@ -3,6 +3,7 @@ from os import path
 import h5py
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.ticker as ticker
 
 plt.style.use('experiments/science.mplstyle')
 
@@ -47,6 +48,9 @@ def plot_original(X, y, output_dir, filename):
     # ax.dist = 12
     ax.grid(False)
     fig.tight_layout()
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.zaxis.set_major_locator(ticker.MultipleLocator(1))
 
     for format in ('.pdf', '.png', '.svg'):
         fig.savefig(path.join(output_dir, filename + format))

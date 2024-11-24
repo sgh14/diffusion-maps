@@ -6,9 +6,7 @@ def normalize(x):
     return (x - np.min(x)) / (np.max(x) - np.min(x))
 
 
-def my_colormap1D(x):
-    c1=(0.75, 0, 0.75)
-    c2=(0, 0.75, 0.75)
+def my_colormap1D(x, c1=(0.75, 0, 0.75), c2=(0, 0.75, 0.75)):
     # Calculate the RGB values based on interpolation
     color = np.array(c1) * (1 - x) + np.array(c2) * x
 

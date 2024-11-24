@@ -64,9 +64,11 @@ for i in range(len(titles)):
         P = np.linalg.matrix_power(P, steps)
     
     D = DM.diffusion_distances(P, DM.pi)
-    point = np.argmin(X_train[:, 2])
-    P_color = np.array([my_colormap1D(x) for x in normalize(P[:, point])])
-    D_color = np.array([my_colormap1D(x) for x in normalize(D[:, point])])
+    point = np.argmin(np.linalg.norm(X_train - np.array([0, -1, -15]), axis=1))
+    P_color = np.array([my_colormap1D(x, c1=(0, 0, 0), c2=(0, 0.75, 0.75)) for x in normalize(P[:, point])])
+    D_color = np.array([my_colormap1D(x, c1=(0, 0, 0), c2=(0.75, 0, 0.75)) for x in normalize(D[:, point])])
+    P_color[point] = (0.72, 0.53, 0.05) # (0.75, 0, 0.75) 
+    D_color[point] = (0.72, 0.53, 0.05) # (0, 0.75, 0.75)
 
     decoder.save(path.join(output_dir, 'decoder.keras'))
     with h5py.File(path.join(output_dir, 'history.h5'), 'w') as file:
