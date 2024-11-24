@@ -74,17 +74,17 @@ def mean_reconstruction_error(X_orig, X_rec):
 
 
 # Function to compute trustworthiness curves
-def trustworthiness_curve(X, X_red, k_vals, metric='euclidean'):
+def trustworthiness_curve(X, X_red, k_vals, metric='precomputed'):
     t_curve = [trustworthiness(X, X_red, n_neighbors=k, metric=metric) for k in k_vals]
 
     return t_curve
 
 
 # Function to compute trustworthiness curves
-def continuity_curve(X, X_red, k_vals, metric='euclidean'):
-    c_curve = trustworthiness_curve(X_red, X, k_vals, metric)
+# def continuity_curve(X, X_red, k_vals, metric='precomputed'):
+   # c_curve = trustworthiness_curve(X_red, X, k_vals, metric)
 
-    return c_curve
+    # return c_curve
 
 
 def clustering_homogeneity_and_completeness(X_red, y):
